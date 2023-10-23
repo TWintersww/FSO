@@ -5,6 +5,8 @@ import personsService from './services/persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notifications from './components/Notifications'
+import ErrorMessage from './components/ErrorMessage'
 
 
 
@@ -14,10 +16,18 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filterString, setFilterString] = useState('')
 
+  const [notification, setNotification] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
+
+
+
+
   useEffect(() => {
     personsService.getAll()
           .then(response => setPersons(response.data))
   }, [])
+
+
 
 
 
@@ -48,6 +58,14 @@ const App = () => {
                           setPersons(persons.map(p => p.id !== test.id
                             ? p : newPerson))
                         })
+                        .catch(error => {
+                          setErrorMessage(`Information of 
+                          ${newPerson.name} has already been 
+                          removed from server`)
+                          setTimeout(() => {
+                            setErrorMessage(null)
+                          }, 5000)
+                        })
       }
     }
 
@@ -58,7 +76,14 @@ const App = () => {
                     setPersons(persons.concat(response.data))
                     setNewName('')
                     setNewNumber('')
+
+                    //set a notification upon successful addition
+                    setNotification(`Added ${newPerson.name}`)
+                    setTimeout(() => 
+                                  {setNotification(null)}, 5000
+                    )
                   })
+                  
     }
   }
   const deleteNumber = (id) => {
@@ -85,6 +110,9 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notifications message={notification} />
+      <ErrorMessage message={errorMessage} />
 
       <Filter filterString={filterString} onChange={handleFilterString} />
 
