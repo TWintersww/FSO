@@ -24,7 +24,10 @@ const App = () => {
 
   useEffect(() => {
     personsService.getAll()
-          .then(response => setPersons(response.data))
+          .then(response => {
+            console.log(response)
+            setPersons(response.data)
+          })
   }, [])
 
 
@@ -42,21 +45,29 @@ const App = () => {
   }
   const addNameElement = (event) => {
     event.preventDefault()
+
+    console.log('addnNamElementRun')
     
     const newPerson = { name: newName, number: newNumber }
 
-    //test holds string if found(truthy), otherwise holds undefined(falsy)
-    const test = persons.find(person => person.name===newName)
+    const test = persons.find(person => {
+      console.log(person.name, ' and ', newName)
+      return person.name===newName})
+    console.log('test id is ', test)
     
     //if .find works (already exists), don't add to phonebook
     if (test) {
       //BACKEND FUNCTIONALITY => REPLACE OLD NUMBER WITH NEW
       if (window.confirm(`${newName} is already added to phonebook. 
         Replace the old number with a new one?`)) {
-          personsService.updateNumber(test.id, newPerson)
+          //we need to use a new object keeping the mongodb id
+          const newPersonWId = { name: newName, number: newNumber, id: test.id }
+          personsService.updateNumber(test.id, newPersonWId)
                         .then(response => {
                           setPersons(persons.map(p => p.id !== test.id
-                            ? p : newPerson))
+                            ? p : newPersonWId))
+                          setNewName('')
+                          setNewNumber('')
                         })
                         .catch(error => {
                           setErrorMessage(`Information of 
